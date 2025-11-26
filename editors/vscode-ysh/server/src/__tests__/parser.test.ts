@@ -613,6 +613,78 @@ describe('Dict Key Tracking', () => {
     });
 });
 
+describe('Function Parameter Tracking', () => {
+    let parser: YSHParser;
+
+    beforeEach(() => {
+        parser = new YSHParser();
+    });
+
+    test('proc parameters are tracked as symbols', () => {
+        const code = `proc verify_dns (expected_ip) {
+  log "Expected: $expected_ip"
+}`;
+        const result = parser.parse(code);
+        const symbols = new SymbolTable();
+        symbols.setText(code);
+        symbols.buildFromParseResult(result);
+
+        // Should find the proc
+        expect(symbols.lookup('verify_dns').length).toBeGreaterThan(0);
+        
+        // Should find the parameter
+        const paramSymbol = symbols.lookup('expected_ip');
+        console.log('expected_ip symbols:', paramSymbol.map(s => s.detail));
+        expect(paramSymbol.length).toBeGreaterThan(0);
+        expect(paramSymbol[0].detail).toContain('parameter');
+    });
+
+    test('proc with multiple parameters', () => {
+        const code = `proc wait_for_ssh (instance, project, zone; max_attempts=30, interval=10) {
+  echo "Waiting for $instance..."
+}`;
+        const result = parser.parse(code);
+        const symbols = new SymbolTable();
+        symbols.setText(code);
+        symbols.buildFromParseResult(result);
+
+        // Should find all parameters
+        expect(symbols.lookup('instance').length).toBeGreaterThan(0);
+        expect(symbols.lookup('project').length).toBeGreaterThan(0);
+        expect(symbols.lookup('zone').length).toBeGreaterThan(0);
+        expect(symbols.lookup('max_attempts').length).toBeGreaterThan(0);
+        expect(symbols.lookup('interval').length).toBeGreaterThan(0);
+
+        console.log('All symbols:', symbols.getAllSymbols().map(s => `${s.name}(${s.detail})`).join(', '));
+    });
+
+    test('func parameters are tracked as symbols', () => {
+        const code = `func calculate (x, y) {
+  return x + y
+}`;
+        const result = parser.parse(code);
+        const symbols = new SymbolTable();
+        symbols.setText(code);
+        symbols.buildFromParseResult(result);
+
+        expect(symbols.lookup('x').length).toBeGreaterThan(0);
+        expect(symbols.lookup('y').length).toBeGreaterThan(0);
+    });
+
+    test('parameter lookup in real fixture', () => {
+        const code = loadFixture('caddy.ysh');
+        const result = parser.parse(code);
+        const symbols = new SymbolTable();
+        symbols.setText(code);
+        symbols.buildFromParseResult(result);
+
+        // verify_dns has expected_ip parameter
+        const expectedIpSymbol = symbols.lookup('expected_ip');
+        console.log('expected_ip in caddy.ysh:', expectedIpSymbol.map(s => `${s.detail} at line ${s.range.start.line}`));
+        expect(expectedIpSymbol.length).toBeGreaterThan(0);
+    });
+});
+
 describe('Variable Detection in Strings', () => {
     test('getWordAtPosition extracts $var in strings', () => {
         const text = `echo "Hello $name"`;

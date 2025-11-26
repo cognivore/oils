@@ -226,6 +226,11 @@ export class SymbolTable {
 
     this.addSymbol(node.name, symbol);
 
+    // Add parameters as symbols so go-to-definition works on them
+    if (node.params) {
+      this.addParameterSymbols(node.params, node.startIndex, 'proc');
+    }
+
     const docSymbol: DocumentSymbol = {
       name: node.name,
       kind: SymbolKind.Function,
@@ -254,6 +259,11 @@ export class SymbolTable {
 
     this.addSymbol(node.name, symbol);
 
+    // Add parameters as symbols so go-to-definition works on them
+    if (node.params) {
+      this.addParameterSymbols(node.params, node.startIndex, 'func');
+    }
+
     const docSymbol: DocumentSymbol = {
       name: node.name,
       kind: SymbolKind.Function,
@@ -262,6 +272,47 @@ export class SymbolTable {
       detail: symbol.detail,
     };
     this.documentSymbols.push(docSymbol);
+  }
+
+  /**
+   * Add function/proc parameters as symbols for go-to-definition
+   */
+  private addParameterSymbols(params: string[], funcStartIndex: number, funcType: string): void {
+    // Find the parameter list in the source text
+    const searchStart = funcStartIndex;
+    const searchEnd = Math.min(funcStartIndex + 500, this.text.length);
+    const searchText = this.text.slice(searchStart, searchEnd);
+    
+    // Find opening paren
+    const parenStart = searchText.indexOf('(');
+    if (parenStart === -1) return;
+    
+    // For each parameter, try to find its position in the text
+    for (const param of params) {
+      // Strip any default value (e.g., "max_attempts=30" -> "max_attempts")
+      const paramName = param.split('=')[0].trim();
+      if (!paramName) continue;
+      
+      // Find this parameter in the text after the opening paren
+      const paramPattern = new RegExp(`\\b${this.escapeRegExp(paramName)}\\b`);
+      const match = searchText.slice(parenStart).match(paramPattern);
+      
+      if (match && match.index !== undefined) {
+        const paramStart = searchStart + parenStart + match.index;
+        const paramEnd = paramStart + paramName.length;
+        const range = this.indexToRange(paramStart, paramEnd);
+        
+        const symbol: SymbolInfo = {
+          name: paramName,
+          kind: SymbolKind.Variable,
+          range,
+          selectionRange: range,
+          detail: `${funcType} parameter`,
+        };
+        
+        this.addSymbol(paramName, symbol);
+      }
+    }
   }
 
   private addShellFunctionSymbol(node: ASTNode): void {

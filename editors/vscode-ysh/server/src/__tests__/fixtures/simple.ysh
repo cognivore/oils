@@ -16,26 +16,26 @@ func add (a, b) {
 
 proc main {
   greet 'World'
-  
+
   var result = ''
   setvar result = $[add(1, 2)]
-  
+
   echo "Result: $result"
-  
+
   for i in @(seq 1 5) {
     echo "Count: $i"
   }
-  
+
   while (counter < 3) {
     greet 'Again'
   }
-  
+
   if (counter > 0) {
     echo "Counter is positive"
   } else {
     echo "Counter is zero or negative"
   }
-  
+
   try {
     var risky = $(might-fail)
   }
