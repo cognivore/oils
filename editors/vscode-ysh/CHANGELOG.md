@@ -2,6 +2,13 @@
 
 All notable changes to the "ysh-language" extension will be documented in this file.
 
+## [0.1.1] - 2024-11-28
+
+### Fixed
+
+- Language server now starts correctly (server dependencies were missing from package)
+- Cross-file go-to-definition now works for sourced files using `$_this_dir` paths
+
 ## [0.1.0] - 2024-11-27
 
 ### Added

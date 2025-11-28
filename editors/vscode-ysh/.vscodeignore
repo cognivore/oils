@@ -7,8 +7,10 @@ server/src/**
 .gitignore
 **/tsconfig.json
 **/*.tsbuildinfo
+# Extension root node_modules not needed (vscode provides vscode-languageclient)
 node_modules/**
-server/node_modules/**
+# BUT server node_modules ARE needed - don't exclude them!
+# server/node_modules/**  <- REMOVED - server needs its dependencies!
 .direnv/**
 .envrc
 flake.nix

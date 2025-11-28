@@ -1,6 +1,6 @@
 {
   "name": "ysh-language-server",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Language server for YSH (Oils Shell)",
   "license": "Apache-2.0",
   "main": "./out/server.js",

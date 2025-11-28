@@ -2,7 +2,7 @@
   "name": "ysh-language",
   "displayName": "YSH (Oils Shell)",
   "description": "Language support for YSH - the new shell language from Oils with LSP, syntax highlighting, and code navigation",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "oilshell",
   "license": "Apache-2.0",
   "icon": "images/ysh-icon.png",
